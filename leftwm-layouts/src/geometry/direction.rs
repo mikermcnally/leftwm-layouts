@@ -77,11 +77,11 @@ impl FromStr for Direction {
 
 // Find the north neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
-fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
+fn find_north(rects: &[Rect], current: usize, container_top_edge: i32) -> Option<usize> {
     let current_rect = rects.get(current).or(None)?;
 
     // We are all the way up, no neighbor available
-    if current_rect.top_edge() <= 0 {
+    if current_rect.top_edge() <= container_top_edge {
         return None;
     }
 
@@ -118,11 +118,11 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
 
 // Find the east neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
-fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize> {
+fn find_east(rects: &[Rect], current: usize, display_right_edge: i32) -> Option<usize> {
     let current_rect = rects.get(current).or(None)?;
 
     // We are all the way right, no neighbor available
-    if current_rect.right_edge() >= display_width as i32 {
+    if current_rect.right_edge() >= display_right_edge {
         return None;
     }
 
@@ -159,11 +159,11 @@ fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize
 
 // Find the south neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
-fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usize> {
+fn find_south(rects: &[Rect], current: usize, display_bottom_edge: i32) -> Option<usize> {
     let current_rect = rects.get(current).or(None)?;
 
     // We are at the bottom, no neighbor available
-    if current_rect.y + current_rect.h as i32 >= display_height as i32 {
+    if current_rect.y + current_rect.h as i32 >= display_bottom_edge {
         return None;
     }
 
@@ -201,11 +201,11 @@ fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usi
 
 // Find the west neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
-fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
+fn find_west(rects: &[Rect], current: usize, container_left_edge: i32) -> Option<usize> {
     let current_rect = rects.get(current).or(None)?;
 
     // We are all the way left; no neighbor available
-    if current_rect.left_edge() <= 0 {
+    if current_rect.left_edge() <= container_left_edge {
         return None;
     }
 
@@ -295,13 +295,16 @@ impl Direction {
         if current >= rects.len() {
             return None;
         }
-        let container_right_edge = (container.w / 2) as i32 + container.x;
+        let container_top_edge =  container.y;
+        let container_right_edge =  container.x + container.w as i32;
+        let container_bottom_edge =  container.y + container.h as i32;
+        let container_left_edge =  container.x;
 
         match direction {
-            Direction::North => find_north(rects, current),
-            Direction::East => find_east(rects, current, container.w),
-            Direction::South => find_south(rects, current, container.h),
-            Direction::West => find_west(rects, current),
+            Direction::North => find_north(rects, current, container_top_edge),
+            Direction::East => find_east(rects, current, container_right_edge),
+            Direction::South => find_south(rects, current, container_bottom_edge),
+            Direction::West => find_west(rects, current, container_left_edge),
         }
     }
 }
