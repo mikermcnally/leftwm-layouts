@@ -295,6 +295,7 @@ impl Direction {
         if current >= rects.len() {
             return None;
         }
+        let container_right_edge = (container.w / 2) as i32 + container.x;
 
         match direction {
             Direction::North => find_north(rects, current),
@@ -309,26 +310,60 @@ impl Direction {
 mod tests {
     use crate::geometry::{Direction, Rect};
 
-    const CONTAINER: Rect = Rect {
+    const MAIN_CONTAINER: Rect = Rect {
         x: 0,
         y: 0,
         w: 600,
         h: 600,
     };
+    const NORTH_CONTAINER: Rect = Rect {
+        x: 0,
+        y: -200,
+        w: 600,
+        h: 200,
+    };
+    const EAST_CONTAINER: Rect = Rect {
+        x: 600,
+        y: 0,
+        w: 200,
+        h: 600,
+    };
+    const SOUTH_CONTAINER: Rect = Rect {
+        x: 0,
+        y: 600,
+        w: 600,
+        h: 200,
+    };
+    const WEST_CONTAINER: Rect = Rect {
+        x: -200,
+        y: 0,
+        w: 200,
+        h: 600,
+    };
 
-    // Test layout
-    // +-----------------+
-    // |+---+ +---+ +---+|
-    // || 0 | | 3 | | 4 ||
-    // |+---+ +---+ +---+|
-    // |+---+ +---+ +---+|
-    // || 1 | | 6 | |   ||
-    // |+---+ +---+ |   ||
-    // |+---+       | 5 ||
-    // || 2 |       |   ||
-    // |+---+       +---+|
-    // +-----------------+
-    const ARRAY: [Rect; 7] = [
+    //              Test layout
+    //          +-----------------+
+    //          |+---------------+|
+    //          ||       7       ||
+    //          |+---------------+|
+    //          +-----------------+
+    // +------+ +-----------------+ +------+
+    // |+----+| |+---+ +---+ +---+| |+----+|
+    // ||    || || 0 | | 3 | | 4 || ||    ||
+    // ||    || |+---+ +---+ +---+| ||    ||
+    // ||    || |+---+ +---+ +---+| ||    ||
+    // || 10 || || 1 | |   | |   || ||  8 ||
+    // ||    || |+---+ |   | |   || ||    ||
+    // ||    || |+---+ | 6 | | 5 || ||    ||
+    // ||    || || 2 | |   | |   || ||    ||
+    // |+----+| |+---+ +---+ +---+| |+----+|
+    // +------+ +-----------------+ +------+
+    //          +-----------------+
+    //          |+---------------+|
+    //          ||       9       ||
+    //          |+---------------+|
+    //          +-----------------+
+    const ARRAY: [Rect; 11] = [
         Rect {
             x: 0,
             y: 0,
@@ -371,77 +406,133 @@ mod tests {
             w: 200,
             h: 400,
         },
+        Rect {
+            x: 0,
+            y: -200,
+            w: 600,
+            h: 200,
+        },
+        Rect {
+            x: 600,
+            y: 0,
+            w: 200,
+            h: 600,
+        },
+        Rect {
+            x: 0,
+            y: 600,
+            w: 600,
+            h: 200,
+        },
+        Rect {
+            x: -200,
+            y: 0,
+            w: 200,
+            h: 600,
+        },
     ];
 
     #[test]
     fn north_neighbor() {
-        let res = Direction::find_neighbor(&ARRAY, 0, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 0, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 1, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 1, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, Some(0));
-        let res = Direction::find_neighbor(&ARRAY, 2, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 2, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, Some(1));
-        let res = Direction::find_neighbor(&ARRAY, 3, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 3, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 4, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 4, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 5, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 5, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, Some(4));
-        let res = Direction::find_neighbor(&ARRAY, 6, Direction::North, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::North, &MAIN_CONTAINER);
         assert_eq!(res, Some(3));
+        let res = Direction::find_neighbor(&ARRAY, 7, Direction::North, &NORTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 8, Direction::North, &EAST_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 9, Direction::North, &SOUTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 10, Direction::North, &WEST_CONTAINER);
+        assert_eq!(res, None);
     }
 
     #[test]
     fn east_neighbor() {
-        let res = Direction::find_neighbor(&ARRAY, 0, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 0, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, Some(3));
-        let res = Direction::find_neighbor(&ARRAY, 1, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 1, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, Some(6));
-        let res = Direction::find_neighbor(&ARRAY, 2, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 2, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, Some(6));
-        let res = Direction::find_neighbor(&ARRAY, 3, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 3, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, Some(4));
-        let res = Direction::find_neighbor(&ARRAY, 4, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 4, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 5, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 5, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 6, Direction::East, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::East, &MAIN_CONTAINER);
         assert_eq!(res, Some(5));
+        let res = Direction::find_neighbor(&ARRAY, 7, Direction::East, &NORTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 8, Direction::East, &EAST_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 9, Direction::East, &SOUTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 10, Direction::East, &WEST_CONTAINER);
+        assert_eq!(res, None);
     }
 
     #[test]
     fn south_neighbor() {
-        let res = Direction::find_neighbor(&ARRAY, 0, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 0, Direction::South, &MAIN_CONTAINER);
         assert_eq!(res, Some(1));
-        let res = Direction::find_neighbor(&ARRAY, 1, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 1, Direction::South, &MAIN_CONTAINER);
         assert_eq!(res, Some(2));
-        let res = Direction::find_neighbor(&ARRAY, 2, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 2, Direction::South, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 3, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 3, Direction::South, &MAIN_CONTAINER);
         assert_eq!(res, Some(6));
-        let res = Direction::find_neighbor(&ARRAY, 4, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 4, Direction::South, &MAIN_CONTAINER);
         assert_eq!(res, Some(5));
-        let res = Direction::find_neighbor(&ARRAY, 5, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 5, Direction::South, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 6, Direction::South, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::South, &MAIN_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 7, Direction::South, &NORTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 8, Direction::South, &EAST_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 9, Direction::South, &SOUTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 10, Direction::South, &WEST_CONTAINER);
         assert_eq!(res, None);
     }
 
     #[test]
     fn west_neighbor() {
-        let res = Direction::find_neighbor(&ARRAY, 0, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 0, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 1, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 1, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 2, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 2, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, None);
-        let res = Direction::find_neighbor(&ARRAY, 3, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 3, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, Some(0));
-        let res = Direction::find_neighbor(&ARRAY, 4, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 4, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, Some(3));
-        let res = Direction::find_neighbor(&ARRAY, 5, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 5, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, Some(6));
-        let res = Direction::find_neighbor(&ARRAY, 6, Direction::West, &CONTAINER);
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::West, &MAIN_CONTAINER);
         assert_eq!(res, Some(1));
+        let res = Direction::find_neighbor(&ARRAY, 7, Direction::West, &NORTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 8, Direction::West, &EAST_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 9, Direction::West, &SOUTH_CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 10, Direction::West, &WEST_CONTAINER);
+        assert_eq!(res, None);
     }
 }
